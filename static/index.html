@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Legendário IA</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f0f1a; color: #e0e0e0; min-height: 100vh; }
+    .container { max-width: 860px; margin: 0 auto; padding: 48px 24px; }
+
+    h1 { font-size: 2rem; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .subtitle { color: #666; margin-bottom: 40px; font-size: 0.95rem; }
+
+    .card { background: #161625; border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+
+    .drop-zone {
+      border: 2px dashed #2a2a45; border-radius: 12px; padding: 56px 40px;
+      text-align: center; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s; margin-bottom: 20px;
+    }
+    .drop-zone:hover, .drop-zone.over { border-color: #e94560; background: #1a1a2e; }
+    .drop-zone .icon { font-size: 2.8rem; margin-bottom: 14px; }
+    .drop-zone p { color: #777; line-height: 1.6; }
+    .drop-zone strong { color: #e94560; }
+    input[type="file"] { display: none; }
+
+    .file-pill {
+      display: flex; align-items: center; gap: 12px;
+      background: #1a1a30; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;
+    }
+    .file-pill .name { font-weight: 600; color: #fff; }
+    .file-pill .size { color: #666; font-size: 0.82rem; }
+
+    .btn { padding: 13px 28px; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.18s; }
+    .btn-block { display: block; width: 100%; }
+    .btn-red { background: #e94560; color: #fff; }
+    .btn-red:hover:not(:disabled) { background: #c9364f; }
+    .btn-red:disabled { background: #2a2a40; color: #555; cursor: not-allowed; }
+    .btn-ghost { background: #1e1e35; color: #ccc; border: 1px solid #2a2a45; }
+    .btn-ghost:hover { background: #26263e; }
+    .btn-green { background: #22a855; color: #fff; }
+    .btn-green:hover { background: #1a8f46; }
+    .btn-reels { background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; }
+    .btn-reels:hover { opacity: 0.88; }
+
+    .progress-label { color: #999; font-size: 0.88rem; margin-bottom: 10px; }
+    .bar-bg { background: #0f0f1a; border-radius: 100px; height: 5px; overflow: hidden; margin-bottom: 14px; }
+    .bar-fill { height: 100%; background: linear-gradient(90deg, #e94560, #ff7b7b); border-radius: 100px; transition: width 0.6s ease; }
+    .steps { display: flex; gap: 6px; }
+    .step { flex: 1; height: 3px; border-radius: 100px; background: #2a2a45; transition: background 0.3s; }
+    .step.active { background: #e94560; }
+    .step.done { background: #22a855; }
+
+    /* Transcript editor */
+    .section-title { font-size: 1rem; font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .section-hint { font-size: 0.82rem; color: #555; margin-bottom: 16px; }
+
+    .seg-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid #1e1e35;
+    }
+    .seg-row:last-child { border-bottom: none; }
+    .seg-time { font-size: 0.75rem; color: #555; font-family: monospace; min-width: 42px; }
+    .seg-input {
+      flex: 1; background: transparent; border: none; color: #ddd;
+      font-size: 0.92rem; font-family: inherit; padding: 4px 6px;
+      border-radius: 5px; outline: none;
+    }
+    .seg-input:focus { background: #1e1e35; }
+
+    .save-hint { font-size: 0.78rem; color: #e94560; margin-top: 10px; display: none; }
+
+    .row { display: flex; gap: 12px; }
+    .row .btn { flex: 1; }
+
+    /* Customization panel */
+    .custom-card { background: #161625; border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+    .custom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .custom-field label { display: block; font-size: 0.78rem; color: #777; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .color-row { display: flex; align-items: center; gap: 10px; }
+    .color-row input[type="color"] {
+      width: 38px; height: 38px; border: none; border-radius: 8px; cursor: pointer;
+      background: #1e1e35; padding: 2px; outline: none;
+    }
+    .color-hex {
+      flex: 1; background: #1e1e35; border: 1px solid #2a2a45; border-radius: 8px;
+      color: #ddd; font-size: 0.85rem; padding: 8px 10px; font-family: monospace;
+      outline: none; width: 90px;
+    }
+    .color-hex:focus { border-color: #e94560; }
+    .select-styled {
+      width: 100%; background: #1e1e35; border: 1px solid #2a2a45; border-radius: 8px;
+      color: #ddd; font-size: 0.88rem; padding: 10px 12px; outline: none; cursor: pointer;
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23666' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+    }
+    .select-styled:focus { border-color: #e94560; }
+    .toggle-group { display: flex; gap: 4px; flex-wrap: wrap; }
+    .toggle-btn {
+      flex: 1; min-width: 0; padding: 8px 6px; border: 1px solid #2a2a45;
+      border-radius: 8px; background: #1e1e35; color: #888; font-size: 0.8rem;
+      font-weight: 600; cursor: pointer; transition: all 0.15s; text-align: center;
+    }
+    .toggle-btn.active { background: #e94560; border-color: #e94560; color: #fff; }
+    .toggle-btn:hover:not(.active) { border-color: #555; color: #ccc; }
+
+    .error { background: #2d1515; border: 1px solid #6b2020; border-radius: 10px; padding: 18px; color: #ff7b7b; font-size: 0.85rem; font-family: monospace; white-space: pre-wrap; margin-bottom: 20px; }
+    .success { background: #0f2018; border: 1px solid #1a5c35; border-radius: 10px; padding: 32px; text-align: center; }
+    .success .big-icon { font-size: 3rem; margin-bottom: 12px; }
+    .success p { color: #4caf50; margin-bottom: 22px; font-size: 0.95rem; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Legendario IA</h1>
+  <p class="subtitle">Suba o vídeo, corrija a transcrição se necessário e gere o vídeo com legendas.</p>
+
+  <!-- Upload -->
+  <div id="sec-upload">
+    <div class="drop-zone" id="drop-zone">
+      <div class="icon">📹</div>
+      <p><strong>Clique para selecionar</strong> ou arraste um vídeo aqui<br>MP4, MOV, AVI, MKV</p>
+      <input type="file" id="file-input" accept="video/*">
+    </div>
+
+    <div class="file-pill hidden" id="file-pill">
+      <span style="font-size:1.4rem">🎥</span>
+      <div>
+        <div class="name" id="pill-name"></div>
+        <div class="size" id="pill-size"></div>
+      </div>
+    </div>
+
+    <button class="btn btn-red btn-block" id="btn-process" disabled onclick="startProcess()">
+      ▶ Processar Vídeo
+    </button>
+  </div>
+
+  <!-- Progress -->
+  <div class="card hidden" id="sec-progress">
+    <div class="progress-label" id="prog-msg">Iniciando...</div>
+    <div class="bar-bg"><div class="bar-fill" id="prog-bar" style="width:0%"></div></div>
+    <div class="steps">
+      <div class="step" id="s1" title="Extrair áudio"></div>
+      <div class="step" id="s2" title="Transcrever"></div>
+      <div class="step" id="s3" title="Cortar silêncios"></div>
+      <div class="step" id="s4" title="Concluído"></div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="error hidden" id="sec-error"></div>
+
+  <!-- Transcript editor -->
+  <div id="sec-transcript" class="hidden">
+    <div class="card">
+      <div class="section-title">✏️ Transcrição</div>
+      <div class="section-hint">Clique em qualquer linha para corrigir erros antes de renderizar.</div>
+      <div id="transcript-list"></div>
+      <div class="save-hint" id="save-hint">● Alterações não salvas — clique em Salvar antes de renderizar.</div>
+    </div>
+
+    <div class="row" style="margin-bottom: 20px;">
+      <button class="btn btn-ghost" onclick="saveTranscript()">💾 Salvar edições</button>
+    </div>
+
+    <!-- Customization -->
+    <div class="custom-card">
+      <div class="section-title" style="margin-bottom:20px">🎨 Personalização da Legenda</div>
+      <div class="custom-grid">
+
+        <div class="custom-field">
+          <label>Cor do Texto</label>
+          <div class="color-row">
+            <input type="color" id="color-text" value="#ffffff" oninput="syncHex('color-text','hex-text')">
+            <input class="color-hex" id="hex-text" value="#ffffff" maxlength="7" oninput="syncPicker('hex-text','color-text')">
+          </div>
+        </div>
+
+        <div class="custom-field">
+          <label>Cor do Contorno</label>
+          <div class="color-row">
+            <input type="color" id="color-outline" value="#000000" oninput="syncHex('color-outline','hex-outline')">
+            <input class="color-hex" id="hex-outline" value="#000000" maxlength="7" oninput="syncPicker('hex-outline','color-outline')">
+          </div>
+        </div>
+
+        <div class="custom-field">
+          <label>Fonte</label>
+          <select class="select-styled" id="sel-font">
+            <option value="Arial">Arial</option>
+            <option value="Impact">Impact</option>
+            <option value="Segoe UI">Segoe UI</option>
+            <option value="Calibri">Calibri</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Tahoma">Tahoma</option>
+            <option value="Arial Black">Arial Black</option>
+          </select>
+        </div>
+
+        <div class="custom-field">
+          <label>Tamanho</label>
+          <div class="toggle-group" id="tg-size">
+            <button class="toggle-btn" data-val="pequeno" onclick="pick('tg-size',this)">P</button>
+            <button class="toggle-btn" data-val="medio" onclick="pick('tg-size',this)">M</button>
+            <button class="toggle-btn active" data-val="grande" onclick="pick('tg-size',this)">G</button>
+            <button class="toggle-btn" data-val="extra" onclick="pick('tg-size',this)">XG</button>
+          </div>
+        </div>
+
+        <div class="custom-field">
+          <label>Posição</label>
+          <div class="toggle-group" id="tg-pos">
+            <button class="toggle-btn" data-val="topo" onclick="pick('tg-pos',this)">Topo</button>
+            <button class="toggle-btn" data-val="centro" onclick="pick('tg-pos',this)">Centro</button>
+            <button class="toggle-btn active" data-val="baixo" onclick="pick('tg-pos',this)">Baixo</button>
+          </div>
+        </div>
+
+        <div class="custom-field">
+          <label>Palavras por bloco</label>
+          <div class="toggle-group" id="tg-chunk">
+            <button class="toggle-btn" data-val="1" onclick="pick('tg-chunk',this)">1</button>
+            <button class="toggle-btn" data-val="2" onclick="pick('tg-chunk',this)">2</button>
+            <button class="toggle-btn active" data-val="3" onclick="pick('tg-chunk',this)">3</button>
+            <button class="toggle-btn" data-val="4" onclick="pick('tg-chunk',this)">4</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="row">
+      <button class="btn btn-reels btn-block" onclick="renderVideo()">🎬 Gerar Vídeo com Legenda</button>
+    </div>
+  </div>
+
+  <!-- Render progress -->
+  <div class="card hidden" id="sec-render">
+    <div class="progress-label" id="render-msg">Renderizando...</div>
+    <div class="bar-bg"><div class="bar-fill" id="render-bar" style="width:10%"></div></div>
+  </div>
+
+  <!-- Done -->
+  <div class="success hidden" id="sec-done">
+    <div class="big-icon">✅</div>
+    <p>Vídeo editado e pronto!</p>
+    <div class="row" style="justify-content: center; gap: 12px;">
+      <button class="btn btn-green" onclick="downloadVideo()">⬇ Baixar Vídeo</button>
+      <button class="btn btn-ghost" onclick="renderAnother()">🔄 Outro estilo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let jobId = null;
+  let poll = null;
+  let file = null;
+  let segments = [];
+  let dirty = false;
+
+  const drop = document.getElementById('drop-zone');
+  const input = document.getElementById('file-input');
+
+  drop.addEventListener('click', () => input.click());
+  drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+  drop.addEventListener('drop', e => {
+    e.preventDefault(); drop.classList.remove('over');
+    if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+  });
+  input.addEventListener('change', e => { if (e.target.files[0]) setFile(e.target.files[0]); });
+
+  function setFile(f) {
+    file = f;
+    document.getElementById('pill-name').textContent = f.name;
+    document.getElementById('pill-size').textContent = fmtSize(f.size);
+    document.getElementById('file-pill').classList.remove('hidden');
+    document.getElementById('btn-process').disabled = false;
+  }
+
+  function fmtSize(b) {
+    if (b > 1e9) return (b/1e9).toFixed(1)+' GB';
+    if (b > 1e6) return (b/1e6).toFixed(1)+' MB';
+    return (b/1e3).toFixed(0)+' KB';
+  }
+
+  function syncHex(pickerId, hexId) {
+    document.getElementById(hexId).value = document.getElementById(pickerId).value;
+  }
+  function syncPicker(hexId, pickerId) {
+    const v = document.getElementById(hexId).value;
+    if (/^#[0-9a-fA-F]{6}$/.test(v)) document.getElementById(pickerId).value = v;
+  }
+
+  function pick(groupId, btn) {
+    document.querySelectorAll(`#${groupId} .toggle-btn`).forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function getOptions() {
+    const active = (id) => document.querySelector(`#${id} .toggle-btn.active`)?.dataset.val;
+    return {
+      color:   document.getElementById('hex-text').value   || '#ffffff',
+      outline: document.getElementById('hex-outline').value || '#000000',
+      font:    document.getElementById('sel-font').value    || 'Arial',
+      size:    active('tg-size')  || 'grande',
+      position: active('tg-pos') || 'baixo',
+      chunk:   parseInt(active('tg-chunk') || '3'),
+    };
+  }
+
+  async function startProcess() {
+    if (!file) return;
+    document.getElementById('btn-process').disabled = true;
+    hide('sec-error');
+    show('sec-progress');
+    setMsg('Enviando vídeo...', 5);
+
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      const r = await fetch('/upload', { method: 'POST', body: fd });
+      if (!r.ok) throw new Error('Falha no upload');
+      jobId = (await r.json()).job_id;
+      await fetch(`/process/${jobId}`, { method: 'POST' });
+      poll = setInterval(pollStatus, 2500);
+    } catch (e) { showError(e.message); }
+  }
+
+  async function pollStatus() {
+    try {
+      const r = await fetch(`/status/${jobId}`);
+      const d = await r.json();
+      setMsg(d.message, d.progress);
+      for (let i = 1; i <= 4; i++) {
+        const el = document.getElementById(`s${i}`);
+        el.className = 'step' + (d.step > i ? ' done' : d.step === i ? ' active' : '');
+      }
+      if (d.status === 'transcribed') {
+        clearInterval(poll);
+        hide('sec-progress');
+        await loadTranscript();
+      } else if (d.status === 'done') {
+        clearInterval(poll);
+        hide('sec-render');
+        show('sec-done');
+      } else if (d.status === 'error') {
+        clearInterval(poll);
+        showError(d.message);
+      }
+    } catch(_) {}
+  }
+
+  async function loadTranscript() {
+    const r = await fetch(`/transcript/${jobId}`);
+    const data = await r.json();
+    segments = data.segments;
+    renderTranscriptList();
+    show('sec-transcript');
+  }
+
+  function renderTranscriptList() {
+    const list = document.getElementById('transcript-list');
+    list.innerHTML = segments.map((seg, i) => `
+      <div class="seg-row">
+        <span class="seg-time">${fmtDisplay(seg.start)}</span>
+        <input class="seg-input" value="${escHtml(seg.text)}"
+          data-index="${i}"
+          oninput="markDirty()"
+          onchange="segments[${i}].text = this.value">
+      </div>
+    `).join('');
+    dirty = false;
+    document.getElementById('save-hint').style.display = 'none';
+  }
+
+  function markDirty() {
+    if (!dirty) {
+      dirty = true;
+      document.getElementById('save-hint').style.display = 'block';
+    }
+  }
+
+  async function saveTranscript() {
+    document.querySelectorAll('.seg-input').forEach(el => {
+      segments[parseInt(el.dataset.index)].text = el.value;
+    });
+    await fetch(`/transcript/${jobId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ segments })
+    });
+    dirty = false;
+    document.getElementById('save-hint').style.display = 'none';
+  }
+
+  async function renderVideo() {
+    if (dirty) await saveTranscript();
+    hide('sec-transcript');
+    show('sec-render');
+    document.getElementById('render-msg').textContent = 'Gerando vídeo com legenda...';
+
+    let pct = 10;
+    const ticker = setInterval(() => {
+      pct = Math.min(pct + 4, 88);
+      document.getElementById('render-bar').style.width = pct + '%';
+    }, 2000);
+
+    await fetch(`/render/${jobId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(getOptions())
+    });
+
+    poll = setInterval(async () => {
+      const r = await fetch(`/status/${jobId}`);
+      const d = await r.json();
+      document.getElementById('render-msg').textContent = d.message || 'Renderizando...';
+      if (d.status === 'done') {
+        clearInterval(poll); clearInterval(ticker);
+        document.getElementById('render-bar').style.width = '100%';
+        setTimeout(() => { hide('sec-render'); show('sec-done'); }, 400);
+      } else if (d.status === 'error') {
+        clearInterval(poll); clearInterval(ticker);
+        showError(d.message);
+      }
+    }, 2500);
+  }
+
+  function renderAnother() {
+    hide('sec-done');
+    show('sec-transcript');
+  }
+
+  function downloadVideo() { window.open(`/download/${jobId}`, '_blank'); }
+
+  function show(id) { document.getElementById(id).classList.remove('hidden'); }
+  function hide(id) { document.getElementById(id).classList.add('hidden'); }
+  function setMsg(msg, pct) {
+    document.getElementById('prog-msg').textContent = msg || '';
+    document.getElementById('prog-bar').style.width = (pct || 0) + '%';
+  }
+  function showError(msg) {
+    hide('sec-progress'); hide('sec-render');
+    const el = document.getElementById('sec-error');
+    el.textContent = '❌ ' + msg;
+    el.classList.remove('hidden');
+    document.getElementById('btn-process').disabled = false;
+  }
+  function fmtDisplay(t) {
+    const m = Math.floor(t / 60), s = Math.floor(t % 60);
+    return `${m}:${String(s).padStart(2,'0')}`;
+  }
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+</script>
+</body>
+</html>
