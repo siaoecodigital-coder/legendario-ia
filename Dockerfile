@@ -1,22 +1,23 @@
 FROM python:3.11-slim
 
-# Accept MS fonts EULA non-interactively
-RUN echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | debconf-set-selections
-
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+RUN apt-get update && apt-get install -y \
     ffmpeg \
     fontconfig \
     wget \
-    ttf-mscorefonts-installer \
-    fonts-crosextra-carlito \
+    fonts-liberation \
+    fonts-open-sans \
     && rm -rf /var/lib/apt/lists/*
 
-# Montserrat (Google Fonts — open source)
-RUN mkdir -p /usr/share/fonts/truetype/montserrat \
-    && wget -q "https://github.com/google/fonts/raw/main/ofl/montserrat/static/Montserrat-Regular.ttf" \
-       -O /usr/share/fonts/truetype/montserrat/Montserrat-Regular.ttf \
+# Google Fonts: Montserrat, Oswald (Impact-style), Lato (Calibri-style)
+RUN mkdir -p /usr/share/fonts/truetype/custom \
     && wget -q "https://github.com/google/fonts/raw/main/ofl/montserrat/static/Montserrat-Bold.ttf" \
-       -O /usr/share/fonts/truetype/montserrat/Montserrat-Bold.ttf \
+       -O /usr/share/fonts/truetype/custom/Montserrat-Bold.ttf \
+    && wget -q "https://github.com/google/fonts/raw/main/ofl/montserrat/static/Montserrat-Regular.ttf" \
+       -O /usr/share/fonts/truetype/custom/Montserrat-Regular.ttf \
+    && wget -q "https://github.com/google/fonts/raw/main/ofl/oswald/static/Oswald-Bold.ttf" \
+       -O /usr/share/fonts/truetype/custom/Oswald-Bold.ttf \
+    && wget -q "https://github.com/google/fonts/raw/main/ofl/lato/Lato-Regular.ttf" \
+       -O /usr/share/fonts/truetype/custom/Lato-Regular.ttf \
     && fc-cache -f
 
 WORKDIR /app
