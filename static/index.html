@@ -437,7 +437,7 @@
     show('sec-transcript');
   }
 
-  function downloadVideo() { window.open(`/download/${jobId}`, '_blank'); }
+  function downloadVideo() { window.open(`/download/${jobId}?t=${Date.now()}`, '_blank'); }
 
   function show(id) { document.getElementById(id).classList.remove('hidden'); }
   function hide(id) { document.getElementById(id).classList.add('hidden'); }

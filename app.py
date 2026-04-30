@@ -218,8 +218,9 @@ Style: Default,{font},{font_size},{primary},&H000000FF,{outline},&H00000000,-1,0
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
+    an_tag = "{\\an" + str(alignment) + "}"
     events = "\n".join(
-        f"Dialogue: 0,{ass_time(e['start'])},{ass_time(e['end'])},Default,,0,0,0,,{e['text'].strip()}"
+        f"Dialogue: 0,{ass_time(e['start'])},{ass_time(e['end'])},Default,,0,0,0,,{an_tag}{e['text'].strip()}"
         for e in entries
         if e.get("text", "").strip()
     )
@@ -398,7 +399,8 @@ def download(job_id: str):
     path = job.get("final_path")
     if not path or not Path(path).exists():
         raise HTTPException(404, "Arquivo não encontrado")
-    return FileResponse(path, media_type="video/mp4", filename=f"legendario_{job_id}.mp4")
+    return FileResponse(path, media_type="video/mp4", filename=f"legendario_{job_id}.mp4",
+                        headers={"Cache-Control": "no-store"})
 
 
 if __name__ == "__main__":
